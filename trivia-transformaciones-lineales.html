@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Trivia - Transformaciones Lineales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                align-items: flex-start;
+            }
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            max-width: 1100px;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 0;
+                max-height: 100vh;
+                height: 100vh;
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: clamp(1.8em, 5vw, 2.8em);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: none;
+        }
+
+        .header p {
+            font-size: clamp(0.95em, 3vw, 1.1em);
+            opacity: 0.95;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-size: clamp(0.9em, 2vw, 1.1em);
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .content {
+            padding: 2.5rem 2rem;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 2rem 1.5rem;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .start-screen, .rules-screen, .game-screen, .results-screen {
+            display: none;
+        }
+
+        .start-screen.active, .rules-screen.active, .game-screen.active, .results-screen.active {
+            display: block;
+        }
+
+        .start-content h2, .rules-content h2, .results-content h2 {
+            font-size: clamp(1.8em, 5vw, 2.4em);
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .start-content p, .rules-content p {
+            font-size: clamp(0.95em, 2.5vw, 1.1em);
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .rules-list {
+            text-align: left;
+            display: inline-block;
+            margin: 2rem 0;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .rules-list li {
+            font-size: clamp(0.9em, 2vw, 1.05em);
+            color: var(--text-secondary);
+            margin: 1.2rem 0;
+            line-height: 1.7;
+            list-style: none;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .rules-list li:before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .rules-list li strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
+            font-size: clamp(0.95em, 2.5vw, 1.05em);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            text-transform: none;
+            letter-spacing: 0px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            font-weight: 600;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+        }
+
+        .question-number {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: clamp(0.85em, 2vw, 0.95em);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .question {
+            font-size: clamp(1.3em, 4vw, 1.6em);
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .options {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option {
+            padding: clamp(1rem, 3vw, 1.25rem) clamp(1rem, 3vw, 1.5rem);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            font-size: clamp(0.95em, 2.5vw, 1.05em);
+            text-align: left;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.04);
+            transform: translateX(4px);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .option.correct {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .option.incorrect {
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .feedback {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 14px;
+            display: none;
+            font-size: clamp(0.9em, 2vw, 1em);
+            line-height: 1.7;
+        }
+
+        .feedback.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+            color: var(--success);
+        }
+
+        .feedback.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--error);
+            color: var(--error);
+        }
+
+        .feedback strong {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        .feedback-explanation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-next:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            transition: width 0.4s ease;
+        }
+
+        .results-content h2 {
+            font-size: clamp(1.8em, 5vw, 2.4em);
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+        }
+
+        .final-score {
+            font-size: clamp(2.5em, 8vw, 4em);
+            color: var(--primary);
+            font-weight: 800;
+            margin: 2rem 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score-message {
+            font-size: clamp(1em, 3vw, 1.25em);
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .results-stats {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 14px;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .results-stats div {
+            font-size: clamp(0.95em, 2.5vw, 1.1em);
+            color: var(--text-secondary);
+            margin: 0.75rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-stats strong {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 2rem 1.5rem;
+            }
+
+            .content {
+                padding: 1.5rem 1rem;
+            }
+
+            .options {
+                gap: 0.75rem;
+            }
+
+            .option {
+                padding: 0.9rem 1rem;
+            }
+
+            .question {
+                margin-bottom: 1.5rem;
+            }
+
+            .button-group {
+                gap: 0.75rem;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+
+        .start-content, .rules-content {
+            text-align: center;
+        }
+
+        .results-content {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Trivia Transformaciones Lineales</h1>
+            <p>Pon a prueba tus conocimientos sobre Álgebra Lineal</p>
+            <div class="header-info">
+                <div class="score-display">Puntuación: <span id="scoreDisplay">0</span>/%</div>
+                <div class="score-display" id="questionDisplay" style="display:none;">Pregunta: <span id="currentQuestion">0</span>/15</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Pantalla de Inicio -->
+            <div class="start-screen active">
+                <div class="start-content">
+                    <h2>¡Bienvenido!</h2>
+                    <p>Prepárate para un emocionante trivia sobre <strong>Transformaciones Lineales</strong>.</p>
+                    <p style="color: #999; font-size: 0.95em;">Este juego incluye 15 preguntas interactivas con retroalimentación inmediata.</p>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="showRules()">Ver Reglas</button>
+                        <button class="btn-secondary" onclick="startGame()">Comenzar Trivia</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla de Reglas -->
+            <div class="rules-screen">
+                <div class="rules-content">
+                    <h2>📋 Reglas del Juego</h2>
+                    <ul class="rules-list">
+                        <li><strong>15 Preguntas:</strong> Responde todas las preguntas sobre transformaciones lineales.</li>
+                        <li><strong>Puntuación:</strong> Obtén 1 punto por cada respuesta correcta. Máximo posible: 15 puntos.</li>
+                        <li><strong>Retroalimentación:</strong> Recibirás retroalimentación inmediata después de cada respuesta con explicaciones detalladas.</li>
+                        <li><strong>Una Oportunidad:</strong> Solo puedes seleccionar una respuesta por pregunta. Elige cuidadosamente.</li>
+                        <li><strong>Avance:</strong> Usa el botón "Siguiente" para pasar a la próxima pregunta.</li>
+                        <li><strong>Resultados:</strong> Al final, verás tu puntuación y podrás reiniciar el juego.</li>
+                        <li><strong>Objetivo:</strong> ¡Comprende los conceptos y disfruta aprendiendo!</li>
+                    </ul>
+                    <div class="button-group">
+                        <button class="btn-secondary" onclick="showStart()">Atrás</button>
+                        <button class="btn-primary" onclick="startGame()">Comenzar Trivia</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla del Juego -->
+            <div class="game-screen">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="question-number" id="questionNumberDisplay"></div>
+                <div class="question" id="questionText"></div>
+                <div class="options" id="optionsContainer"></div>
+                <div class="feedback" id="feedback"></div>
+                <div class="button-container">
+                    <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente Pregunta</button>
+                </div>
+            </div>
+
+            <!-- Pantalla de Resultados -->
+            <div class="results-screen">
+                <div class="results-content">
+                    <h2>¡Trivia Completado!</h2>
+                    <div class="final-score" id="finalScore"></div>
+                    <div class="score-message" id="scoreMessage"></div>
+                    <div class="results-stats">
+                        <div>Respuestas Correctas: <strong id="correctCount">0</strong>/15</div>
+                        <div>Porcentaje: <strong id="percentageScore">0</strong>%</div>
+                        <div>Tiempo invertido: <strong id="timeSpent">0</strong>s</div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="location.reload()">Intentar de Nuevo</button>
+                        <button class="btn-secondary" onclick="showStart()">Menú Principal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "¿Cuál es la definición correcta de una transformación lineal T: V → W?",
+                options: [
+                    "Es una función que multiplica todos los vectores por 2",
+                    "Es una función que satisface T(u + v) = T(u) + T(v) y T(cu) = cT(u) para todo u, v ∈ V y escalar c",
+                    "Es cualquier función entre dos espacios vectoriales",
+                    "Es una función que solo actúa sobre vectores unitarios"
+                ],
+                correct: 1,
+                explanation: "Una transformación lineal debe preservar las operaciones de suma de vectores y multiplicación escalar. Esta es la definición fundamental que caracteriza a todas las transformaciones lineales."
+            },
+            {
+                question: "Si T: ℝ² → ℝ² está definida por T(x, y) = (2x, 0), ¿cuál es el núcleo (kernel) de T?",
+                options: [
+                    "Gen {(1, 1)}",
+                    "Gen {(0, 1)}",
+                    "ℝ²",
+                    "{(0, 0)}"
+                ],
+                correct: 1,
+                explanation: "El núcleo es el conjunto de vectores que se mapean al vector cero. Resolvemos T(x, y) = (0, 0): (2x, 0) = (0, 0) ⟹ x = 0. Por lo tanto, el núcleo es {(0, y) : y ∈ ℝ} = Gen {(0, 1)}."
+            },
+            {
+                question: "Para una transformación lineal T: V → W, ¿qué es la imagen (Im(T))?",
+                options: [
+                    "El conjunto de todos los vectores en V",
+                    "El conjunto de todos los vectores en W que son imagen de al menos un vector en V",
+                    "El conjunto de vectores ortogonales a W",
+                    "El espacio nulo de T"
+                ],
+                correct: 1,
+                explanation: "La imagen de T es el conjunto Im(T) = {T(v) : v ∈ V}. Representa todos los posibles resultados que puede producir la transformación."
+            },
+            {
+                question: "¿Cuál es la matriz asociada a la transformación T(x, y) = (x + y, x - y)?",
+                options: [
+                    "[[1, 1], [1, -1]]",
+                    "[[1, 0], [0, 1]]",
+                    "[[1, 1], [0, 1]]",
+                    "[[2, 0], [0, 0]]"
+                ],
+                correct: 0,
+                explanation: "Los vectores columna de la matriz son T(1, 0) = (1, 1) y T(0, 1) = (1, -1). Por lo tanto, A = [[1, 1], [1, -1]]. Esto permite representar la transformación como una multiplicación de matriz-vector."
+            },
+            {
+                question: "¿Cuando una transformación lineal T es inyectiva (uno a uno)?",
+                options: [
+                    "Siempre que Im(T) = W",
+                    "Cuando ker(T) = {0}",
+                    "Cuando la matriz asociada es cuadrada",
+                    "Cuando T(0) = 0"
+                ],
+                correct: 1,
+                explanation: "Una transformación es inyectiva si y solo si su núcleo contiene solo el vector cero. Esto es porque si T(u) = T(v), entonces T(u - v) = 0, lo que implica u - v ∈ ker(T)."
+            },
+            {
+                question: "¿Cuál es el rango de la transformación T(x, y, z) = (x + y, y + z)?",
+                options: [
+                    "0",
+                    "1",
+                    "2",
+                    "3"
+                ],
+                correct: 2,
+                explanation: "El rango es la dimensión de la imagen. Los vectores (1, 0) y (0, 1) están en la imagen y son linealmente independientes. Por lo tanto, rango(T) = 2 = dim(Im(T))."
+            },
+            {
+                question: "Para una transformación lineal T: V → V con matriz A, ¿cuál es la relación entre ker(T), im(T) y dim(V)?",
+                options: [
+                    "ker(T) + im(T) = dim(V)",
+                    "dim(ker(T)) + dim(im(T)) = dim(V)",
+                    "dim(ker(T)) × dim(im(T)) = dim(V)",
+                    "ker(T) ∩ im(T) = ∅"
+                ],
+                correct: 1,
+                explanation: "Este es el Teorema de la Nulidad. La nulidad (dimensión del núcleo) más el rango (dimensión de la imagen) iguala la dimensión del dominio. Es un resultado fundamental del álgebra lineal."
+            },
+            {
+                question: "¿Cuál de las siguientes NO es una transformación lineal?",
+                options: [
+                    "T(x, y) = (2x, 3y)",
+                    "T(x, y) = (x + y, 0)",
+                    "T(x, y) = (x + 1, y)",
+                    "T(x, y) = (y, x)"
+                ],
+                correct: 2,
+                explanation: "T(x, y) = (x + 1, y) no es lineal porque no preserva la propiedad T(0) = 0. T(0, 0) = (1, 0) ≠ (0, 0). Las transformaciones lineales siempre mapean el vector cero al vector cero."
+            },
+            {
+                question: "¿Cuál es la composición de T ∘ S si T(x, y) = (x + y, 0) y S(x) = (x, 2x)?",
+                options: [
+                    "(T ∘ S)(x) = (3x, 0)",
+                    "(T ∘ S)(x) = (x, 2x)",
+                    "(T ∘ S)(x) = (2x, 0)",
+                    "(T ∘ S)(x) = (3x, 2x)"
+                ],
+                correct: 0,
+                explanation: "La composición T ∘ S significa aplicar S primero, luego T. (T ∘ S)(x) = T(S(x)) = T(x, 2x) = (x + 2x, 0) = (3x, 0). La composición de transformaciones lineales es también lineal."
+            },
+            {
+                question: "¿Una transformación lineal T: ℝ³ → ℝ² sobreyectiva debe tener rango igual a?",
+                options: [
+                    "1",
+                    "2",
+                    "3",
+                    "4"
+                ],
+                correct: 1,
+                explanation: "Una transformación es sobreyectiva cuando Im(T) = W. Como W = ℝ², el rango debe ser dim(W) = 2. Una transformación sobreyectiva tiene rango máximo."
+            },
+            {
+                question: "¿Cuál es la dimensión del núcleo de la matriz A = [[1, 0], [0, 0]]?",
+                options: [
+                    "0",
+                    "1",
+                    "2",
+                    "No se puede determinar"
+                ],
+                correct: 1,
+                explanation: "El núcleo está formado por vectores (x, y) tales que (1, 0; 0, 0)(x, y) = (0, 0). Esto da x = 0, y ∈ ℝ. El núcleo es Gen{(0, 1)}, que tiene dimensión 1."
+            },
+            {
+                question: "¿Un isomorfismo entre espacios vectoriales es una transformación lineal que es?",
+                options: [
+                    "Solo inyectiva",
+                    "Solo sobreyectiva",
+                    "Biyectiva (inyectiva y sobreyectiva)",
+                    "Ninguna de las anteriores"
+                ],
+                correct: 2,
+                explanation: "Un isomorfismo es una transformación lineal biyectiva que preserva toda la estructura del espacio vectorial. Permite identificar dos espacios vectoriales como 'esencialmente iguales'."
+            },
+            {
+                question: "¿Si T es una transformación lineal invertible, cuál es T⁻¹(T(v))?",
+                options: [
+                    "T(v)",
+                    "v",
+                    "0",
+                    "Depende de v"
+                ],
+                correct: 1,
+                explanation: "Por definición, si T⁻¹ es la inversa de T, entonces T⁻¹(T(v)) = (T⁻¹ ∘ T)(v) = I(v) = v, donde I es la transformación identidad."
+            },
+            {
+                question: "¿Cuál es la imágen de T(x, y, z) = (x + y + z, x + y + z)?",
+                options: [
+                    "Gen{(1, 1)}",
+                    "Gen{(1, 1), (1, 1)}",
+                    "ℝ²",
+                    "{(0, 0)}"
+                ],
+                correct: 0,
+                explanation: "Todos los elementos de la imagen tienen la forma (x + y + z, x + y + z) = (x + y + z)(1, 1). Por lo tanto, Im(T) = Gen{(1, 1)}, que es una línea en ℝ²."
+            },
+            {
+                question: "¿En qué consiste la representación matricial de una transformación lineal?",
+                options: [
+                    "En representar T como un número",
+                    "En expresar T(v) = Av donde A es una matriz cuyas columnas son T aplicada a los vectores base",
+                    "En una tabla con los autovalores de T",
+                    "En una lista de todos los vectores transformados"
+                ],
+                correct: 1,
+                explanation: "La representación matricial es fundamental: si e₁, e₂, ..., eₙ son los vectores base de V, la matriz A tiene columnas T(e₁), T(e₂), ..., T(eₙ). Esto permite calcular T(v) por multiplicación matricial."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let answered = false;
+        let gameStartTime = Date.now();
+
+        function showStart() {
+            document.querySelector('.start-screen').classList.add('active');
+            document.querySelector('.rules-screen').classList.remove('active');
+            document.querySelector('.game-screen').classList.remove('active');
+            document.querySelector('.results-screen').classList.remove('active');
+        }
+
+        function showRules() {
+            document.querySelector('.start-screen').classList.remove('active');
+            document.querySelector('.rules-screen').classList.add('active');
+            document.querySelector('.game-screen').classList.remove('active');
+            document.querySelector('.results-screen').classList.remove('active');
+        }
+
+        function startGame() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            answered = false;
+            gameStartTime = Date.now();
+            document.querySelector('.start-screen').classList.remove('active');
+            document.querySelector('.rules-screen').classList.remove('active');
+            document.querySelector('.game-screen').classList.add('active');
+            document.querySelector('.results-screen').classList.remove('active');
+            document.getElementById('questionDisplay').style.display = 'block';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            const progressPercent = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            document.getElementById('questionNumberDisplay').textContent = `Pregunta ${currentQuestion + 1} de ${questions.length}`;
+            document.getElementById('currentQuestion').textContent = currentQuestion + 1;
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectAnswer(index);
+                optionDiv.id = `option-${index}`;
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('nextBtn').disabled = true;
+            selectedAnswer = null;
+            answered = false;
+        }
+
+        function selectAnswer(index) {
+            if (answered) return;
+
+            const question = questions[currentQuestion];
+            selectedAnswer = index;
+            answered = true;
+
+            const options = document.querySelectorAll('.option');
+            options.forEach((option, i) => {
+                option.classList.add('disabled');
+                if (i === question.correct) {
+                    option.classList.add('correct');
+                }
+                if (i === index && i !== question.correct) {
+                    option.classList.add('incorrect');
+                }
+            });
+
+            const feedback = document.getElementById('feedback');
+            if (index === question.correct) {
+                score++;
+                feedback.className = 'feedback success';
+                feedback.innerHTML = `<strong>✓ ¡Correcto!</strong><div class="feedback-explanation">${question.explanation}</div>`;
+                document.getElementById('scoreDisplay').textContent = score;
+            } else {
+                feedback.className = 'feedback error';
+                const correctAnswer = question.options[question.correct];
+                feedback.innerHTML = `<strong>✗ Incorrecto</strong><div style="margin-top: 10px;"><strong>Respuesta correcta:</strong> ${correctAnswer}</div><div class="feedback-explanation">${question.explanation}</div>`;
+            }
+
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const percentage = Math.round((score / questions.length) * 100);
+            const elapsedTime = Math.round((Date.now() - gameStartTime) / 1000);
+
+            document.querySelector('.game-screen').classList.remove('active');
+            document.querySelector('.results-screen').classList.add('active');
+
+            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+            document.getElementById('correctCount').textContent = score;
+            document.getElementById('percentageScore').textContent = percentage;
+            document.getElementById('timeSpent').textContent = elapsedTime;
+            document.getElementById('scoreDisplay').textContent = percentage + '%';
+
+            let message = '';
+            if (percentage === 100) {
+                message = "🌟 ¡Excelente! Dominas perfectamente las transformaciones lineales. 🌟";
+            } else if (percentage >= 80) {
+                message = "🎉 ¡Muy bien! Tienes un excelente conocimiento de los temas. Intenta de nuevo para mejorar.";
+            } else if (percentage >= 60) {
+                message = "✓ Buen trabajo. Repasa algunos conceptos y vuelve a intentar para mejorar tu puntuación.";
+            } else if (percentage >= 40) {
+                message = "⚠️ Podrías mejorar. Estudia más sobre transformaciones lineales y núcleos/imágenes.";
+            } else {
+                message = "📚 Te recomendamos estudiar más sobre los conceptos básicos de transformaciones lineales.";
+            }
+
+            document.getElementById('scoreMessage').textContent = message;
+        }
+
+        // Mostrar la pantalla de inicio al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('scoreDisplay').textContent = '0';
+        });
+    </script>
+</body>
+</html>
