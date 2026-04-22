@@ -1,53 +1,255 @@
-# 🎓 Trivia Interactivo: Transformaciones Lineales
+# Trivia Transformaciones Lineales - Documentación Modular v2.0
 
-## Descripción del Proyecto
+## 📁 Estructura de Archivos Modular
 
-Una aplicación web interactiva diseñada para enseñar y evaluar los conceptos de **Transformaciones Lineales** del curso de Cálculo II / Álgebra Lineal. El trivia combina diversión, aprendizaje y retroalimentación inmediata para motivar a los estudiantes.
+```
+proyecto/
+├── trivia-transformaciones-lineales_V2.html  # Archivo principal HTML
+├── style.css                                  # Estilos CSS
+├── questions.js                               # Banco de preguntas (45 preguntas)
+├── utils.js                                   # Funciones de utilidad reutilizables
+└── README.md                                  # Documentación
+```
 
-### Grupo 5 - Contenidos Cubiertos
-- ✅ Definición y ejemplos de transformaciones lineales
-- ✅ Propiedades de transformaciones lineales, imagen y núcleo
-- ✅ Representación matricial de una transformación lineal
+## 📋 Descripción de Cada Módulo
+
+### `trivia-transformaciones-lineales_V2.html`
+**Archivo principal - Lógica del juego**
+
+Contiene:
+- ✅ Estructura HTML de 4 pantallas (inicio, reglas, juego, resultados)
+- ✅ Lógica principal del flujo del juego
+- ✅ Variables globales del estado
+- ✅ Funciones core: `startGame()`, `loadQuestion()`, `selectAnswer()`, `nextQuestion()`, `showResults()`
+- ✅ Sistema de timer inteligente (1.5 minutos/pregunta)
+- ✅ Carga de módulos externos: `<script src="questions.js">` y `<script src="utils.js">`
+
+### `questions.js`
+**Banco de preguntas - 45 preguntas estructuradas**
+
+Clasificación en 6 bloques temáticos:
+
+| Bloque | Tema | # Preguntas | Tópicos |
+|--------|------|-------------|--------|
+| 1 | Verificación de Linealidad | 12 | T(u+v), T(αu), propiedades |
+| 2 | Clasificación | 6 | Isomorfismo, Mono, Epi, Auto |
+| 3 | Núcleo e Imagen | 4 | ker(T), Im(T), Teorema Dimensión |
+| 4 | Matrices Asociadas | 2 | Construcción y aplicación |
+| 5 | NO Linealidad | 2 | Detección de no lineales |
+| 6 | Composición | 1 | T ∘ S |
+| **TOTAL** | | **45** | Cobertura completa |
+
+**Características:**
+- Variable global: `const allQuestions = [...]`
+- Cada pregunta tiene: `question`, `options[]`, `correct`, `explanation`
+- Se seleccionan 15 preguntas aleatorias por partida
+- Nunca hay dos partidas idénticas
+
+### `style.css`
+**Estilos - Diseño responsivo y animaciones**
+
+Componentes principales:
+- 🎨 Variables CSS (colores, tamaños, tipografías)
+- 📱 Diseño responsive (mobile, tablet, desktop)
+- ⏱️ Timer visual con estados (normal → warning → danger)
+- 📊 Barra de progreso enumerada (1, 2, 3...)
+- ✨ Animaciones suaves y transiciones
+- 🌈 Gradientes y estilos modernos
+
+### `utils.js`
+**Utilidades - Funciones reutilizables**
+
+Categorías de funciones:
+
+**Navegación (2 funciones):**
+```javascript
+showStart()      // Muestra pantalla de inicio
+showRules()      // Muestra pantalla de reglas
+```
+
+**Array (1 función):**
+```javascript
+shuffleArray()   // Mezcla aleatoria de preguntas
+```
+
+**Tiempo (1 función):**
+```javascript
+formatTime()     // Convierte segundos → MM:SS
+```
+
+**Tracker/Progreso (2 funciones):**
+```javascript
+buildProgressTracker()   // Crea items numerados
+updateProgressTracker()  // Actualiza a ✔️ o ✗
+```
+
+**Validación (3 funciones):**
+```javascript
+isGameReady()        // ¿Hay preguntas cargadas?
+hasAnswered()        // ¿Se respondió?
+isLastQuestion()     // ¿Es la última?
+```
 
 ---
 
-## 🎮 Características del Trivia
+## 🎮 Características del Producto Final
 
-### 1. **15 Preguntas Interactivas**
-- Preguntas progresivamente desafiantes
-- Cobertura completa de conceptos fundamentales
-- Ejemplos aplicados y teóricos
+### ⏱️ Timer Inteligente (1.5 minutos)
+- 🟢 0:31 - 1:30 → Verde (normal)
+- 🟡 0:11 - 0:30 → Amarillo (advertencia)
+- 🔴 0:01 - 0:10 → Rojo con pulso (peligro)
+- Respuesta automática incorrecta si expira
 
-### 2. **Retroalimentación Inmediata**
-- ✓ Confirmación instantánea de respuestas correctas
-- ✗ Explicación detallada de errores
-- 📚 Fundamento teórico para cada pregunta
-- 🔍 Orientación hacia la solución correcta
+### 📊 Barra de Progreso Enumerada
+- Ubicada al lado izquierdo (desktop) o arriba (mobile)
+- Muestra números: 1, 2, 3, ..., 15
+- ✔️ Verde = respuesta correcta
+- ✗ Rojo = respuesta incorrecta
+- Azul = pregunta actual
 
-### 3. **Interfaz Atractiva y Lúdica**
-- Diseño moderno con gradientes y animaciones suaves
-- Indicador visual de progreso
-- Sistema de puntuación en tiempo real
-- Emojis y elementos visuales motivadores
+### 📈 Sistema de Puntuación
+- 1 punto por respuesta correcta
+- Máximo: 15 puntos
+- Porcentaje de precisión
+- Estadísticas de tiempo
 
-### 4. **Experiencia Completa**
-- Pantalla de bienvenida
-- Visualización clara de reglas
-- Panel de resultados detallado
-- Estadísticas finales (puntuación, porcentaje, tiempo)
+### 📝 Retroalimentación
+- Respuesta correcta/incorrecta inmediata
+- Explicación detallada de cada pregunta
+- Respuesta correcta destacada
+
+---
+
+## 🔧 Cómo Extender el Proyecto
+
+### ➕ Agregar Nuevas Preguntas
+**Archivo:** `questions.js`
+
+```javascript
+{
+    question: "Tu pregunta aquí con símbolos matemáticos",
+    options: [
+        "Opción incorrecta 1",
+        "Opción correcta ✓",
+        "Opción incorrecta 2",
+        "Opción incorrecta 3"
+    ],
+    correct: 1,  // Índice (0-3) de la respuesta correcta
+    explanation: "Explicación detallada del procedimiento y respuesta"
+}
+```
+
+### ➕ Agregar Nuevas Funciones Utilitarias
+**Archivo:** `utils.js`
+
+```javascript
+// Agregar al final del archivo
+function miNuevaFuncion() {
+    // Tu lógica aquí
+}
+```
+
+### ⚙️ Cambiar el Tiempo por Pregunta
+**Archivo:** `trivia-transformaciones-lineales_V2.html` (línea ~475)
+
+```javascript
+const TIME_PER_QUESTION = 90;  // Cambiar valor en segundos
+// 60 = 1 minuto
+// 90 = 1.5 minutos (actual)
+// 120 = 2 minutos
+```
+
+### ⚙️ Cambiar Cantidad de Preguntas
+**Archivo:** `trivia-transformaciones-lineales_V2.html` (línea ~473)
+
+```javascript
+const QUESTIONS_PER_GAME = 15;  // Cambiar número
+```
+
+### 🎨 Personalizar Colores
+**Archivo:** `style.css` (líneas 6-17)
+
+```css
+:root {
+    --primary: #6366f1;           /* Azul púrpura principal */
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --secondary: #ec4899;
+    --success: #10b981;           /* Verde */
+    --error: #ef4444;             /* Rojo */
+    --warning: #f59e0b;           /* Naranja */
+    --bg: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border: #e2e8f0;
+}
+```
 
 ---
 
-## 📋 Reglas del Juego
+## 📊 Estadísticas
 
-1. **15 Preguntas**: Responde todas las preguntas sobre transformaciones lineales
-2. **Puntuación**: 1 punto por respuesta correcta (máximo 15 puntos)
-3. **Retroalimentación**: Respuesta inmediata con explicaciones después de cada pregunta
-4. **Una Oportunidad**: Solo puedes seleccionar una respuesta por pregunta
-5. **Avance**: Usa "Siguiente" para pasar a la próxima pregunta
-6. **Resultados**: Visualiza tu puntuación y estadísticas al finalizar
+| Métrica | Valor |
+|---------|-------|
+| Total de preguntas | 45 |
+| Preguntas por partida | 15 (aleatorias) |
+| Tiempo por pregunta | 90 segundos |
+| Tiempo máximo total | ~22.5 minutos |
+| Puntuación máxima | 15 puntos |
+| Bloques temáticos | 6 |
 
 ---
+
+## 📚 Contenidos Educativos Cubiertos
+
+✅ Definición de transformaciones lineales  
+✅ Verificación de linealidad (aditividad y homogeneidad)  
+✅ Cálculo de núcleo e imagen  
+✅ Teorema de la dimensión  
+✅ Matrices asociadas  
+✅ Clasificación (isomorfismo, monomorfismo, epimorfismo, automorfismo)  
+✅ Composición de transformaciones  
+✅ Detección de NO linealidad  
+
+---
+
+## 💡 Mejoras Futuras Recomendadas
+
+1. **Modularización avanzada**
+   - Crear `game.js` para lógica compleja
+   - Crear `timer.js` para gestión del timer
+   - Crear `results.js` para cálculos de estadísticas
+
+2. **Funcionalidades**
+   - Guardar histórico de partidas
+   - Estadísticas por tema/bloque
+   - Modo dificultad adaptativa
+   - Explicaciones multimedia (gráficos, videos)
+
+3. **Experiencia**
+   - Tema oscuro
+   - Múltiples idiomas
+   - Certificados descargables
+
+4. **Integración**
+   - API REST para guardar resultados
+   - Integración con LMS (Moodle, Canvas, Blackboard)
+   - Sincronización con Google Classroom
+
+---
+
+## 🎓 Grupo 5 - Contenido Educativo
+
+**Asignatura:** Cálculo II / Álgebra Lineal  
+**Tema:** Transformaciones Lineales  
+**Nivel:** Principiante a Intermedio
+
+---
+
+**Versión:** 2.0 (Modularizada)  
+**Última actualización:** 21 de abril de 2026  
+**Estado:** ✅ Producción
 
 ## 📊 Temas Cubiertos en el Trivia
 
