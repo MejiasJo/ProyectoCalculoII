@@ -80,15 +80,28 @@
 
             <!-- Pantalla del Juego -->
             <div class="game-screen">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="question-number" id="questionNumberDisplay"></div>
-                <div class="question" id="questionText"></div>
-                <div class="options" id="optionsContainer"></div>
-                <div class="feedback" id="feedback"></div>
-                <div class="button-container">
-                    <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente Pregunta</button>
+                <div class="game-container">
+                    <!-- Barra de progreso enumerada -->
+                    <div class="progress-tracker" id="progressTracker"></div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="game-content">
+                        <div class="timer-container">
+                            <div class="timer-bar">
+                                <div class="timer-fill" id="timerFill"></div>
+                            </div>
+                            <div class="timer-display">
+                                <span id="timerText">2:00</span>
+                            </div>
+                        </div>
+                        <div class="question-number" id="questionNumberDisplay"></div>
+                        <div class="question" id="questionText"></div>
+                        <div class="options" id="optionsContainer"></div>
+                        <div class="feedback" id="feedback"></div>
+                        <div class="button-container">
+                            <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente Pregunta</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -123,7 +136,7 @@
                     "T(2 + 3) = 5(5) = 25",
                     "T(2 + 3) = 5 + 3 = 8",
                     "T(2 + 3) = 2 + 3 = 5",
-                    "T(2 + 3) = 5·2 + 5·3 = 25, y T(u)+T(v) = 10+15 = 25 ✓"
+                    "T(2 + 3) = 5·2 + 5·3 = 25, y T(u)+T(v) = 10+15 = 25 "
                 ],
                 correct: 3,
                 explanation: "T(u + v) = T(5) = 5·5 = 25. Por otro lado, T(u) + T(v) = T(2) + T(3) = 10 + 15 = 25. Como ambos resultados son iguales (25 = 25), se cumple la primera condición de linealidad."
@@ -131,7 +144,7 @@
             {
                 question: "Sea T: ℝ → ℝ con T(x) = 5x. Para verificar T(α·u) = α·T(u), si α = 4 y u = 3, ¿qué obtienes?",
                 options: [
-                    "T(4·3) = T(12) = 60; y α·T(u) = 4·T(3) = 4·15 = 60 ✓",
+                    "T(4·3) = T(12) = 60; y α·T(u) = 4·T(3) = 4·15 = 60 ",
                     "T(4·3) = 4 + 3 = 7; α·T(u) = 4·3 = 12",
                     "T(4·3) = T(12) = 12; α·T(u) = 4·5 = 20",
                     "T(4·3) = 4·3·5 = 60; α·T(u) = 5·4·3 = 30"
@@ -459,12 +472,16 @@
             }
         ];
 
+        const TIME_PER_QUESTION = 90; // 2 minutos en segundos
         let currentQuestion = 0;
         let score = 0;
         let selectedAnswer = null;
         let answered = false;
         let gameStartTime = Date.now();
         let gameQuestions = [];
+        let questionStates = []; // Rastrear estado de cada pregunta: 'unanswered', 'correct', 'incorrect'
+        let questionStartTime = 0;
+        let timerInterval = null;
 
         function shuffleArray(arr) {
             const a = [...arr];
@@ -497,18 +514,102 @@
             gameStartTime = Date.now();
             // Selección aleatoria de QUESTIONS_PER_GAME preguntas del banco
             gameQuestions = shuffleArray(allQuestions).slice(0, QUESTIONS_PER_GAME);
+            questionStates = new Array(gameQuestions.length).fill('unanswered');
             document.querySelector('.start-screen').classList.remove('active');
             document.querySelector('.rules-screen').classList.remove('active');
             document.querySelector('.game-screen').classList.add('active');
             document.querySelector('.results-screen').classList.remove('active');
             document.getElementById('questionDisplay').style.display = 'block';
+            buildProgressTracker();
             loadQuestion();
+        }
+
+        function buildProgressTracker() {
+            const tracker = document.getElementById('progressTracker');
+            tracker.innerHTML = '';
+            for (let i = 0; i < gameQuestions.length; i++) {
+                const item = document.createElement('div');
+                item.className = 'progress-item';
+                item.textContent = i + 1;
+                item.id = `progress-${i}`;
+                if (i === currentQuestion) {
+                    item.classList.add('active');
+                }
+                tracker.appendChild(item);
+            }
+        }
+
+        function updateProgressTracker() {
+            // Actualizar todos los items de progreso
+            for (let i = 0; i < gameQuestions.length; i++) {
+                const item = document.getElementById(`progress-${i}`);
+                item.classList.remove('active', 'correct', 'incorrect');
+                
+                if (questionStates[i] === 'correct') {
+                    item.classList.add('correct');
+                    item.textContent = '✔️';
+                } else if (questionStates[i] === 'incorrect') {
+                    item.classList.add('incorrect');
+                    item.textContent = '✗';
+                } else if (i === currentQuestion) {
+                    item.classList.add('active');
+                    item.textContent = i + 1;
+                } else {
+                    item.textContent = i + 1;
+                }
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            questionStartTime = Date.now();
+            
+            timerInterval = setInterval(() => {
+                const elapsedMs = Date.now() - questionStartTime;
+                const elapsedSeconds = Math.floor(elapsedMs / 1000);
+                const remainingSeconds = Math.max(0, TIME_PER_QUESTION - elapsedSeconds);
+                const percentageRemaining = (remainingSeconds / TIME_PER_QUESTION) * 100;
+                
+                document.getElementById('timerText').textContent = formatTime(remainingSeconds);
+                document.getElementById('timerFill').style.width = percentageRemaining + '%';
+                
+                // Cambiar color según urgencia
+                const timerDisplay = document.querySelector('.timer-display');
+                const timerFill = document.getElementById('timerFill');
+                timerDisplay.classList.remove('warning', 'danger');
+                timerFill.classList.remove('warning', 'danger');
+                
+                if (remainingSeconds <= 10) {
+                    timerDisplay.classList.add('danger');
+                    timerFill.classList.add('danger');
+                } else if (remainingSeconds <= 30) {
+                    timerDisplay.classList.add('warning');
+                    timerFill.classList.add('warning');
+                }
+                
+                // Si se agota el tiempo
+                if (remainingSeconds === 0) {
+                    clearInterval(timerInterval);
+                    if (!answered) {
+                        selectAnswer(-1); // Respuesta automática incorrecta
+                        setTimeout(() => {
+                            document.getElementById('feedback').innerHTML = '<strong>⚠️ ¡Se agotó el tiempo!</strong><div class="feedback-explanation">Debes ser más rápido. Intenta de nuevo.</div>';
+                            document.getElementById('feedback').className = 'feedback error';
+                            document.getElementById('nextBtn').disabled = false;
+                        }, 100);
+                    }
+                }
+            }, 100);
         }
 
         function loadQuestion() {
             const question = gameQuestions[currentQuestion];
-            const progressPercent = ((currentQuestion + 1) / gameQuestions.length) * 100;
-            document.getElementById('progressFill').style.width = progressPercent + '%';
             document.getElementById('questionNumberDisplay').textContent = `Pregunta ${currentQuestion + 1} de ${gameQuestions.length}`;
             document.getElementById('currentQuestion').textContent = currentQuestion + 1;
             document.getElementById('questionText').textContent = question.question;
@@ -530,11 +631,15 @@
             document.getElementById('nextBtn').disabled = true;
             selectedAnswer = null;
             answered = false;
+            updateProgressTracker();
+            startTimer();
         }
 
         function selectAnswer(index) {
             if (answered) return;
 
+            if (timerInterval) clearInterval(timerInterval);
+            
             const question = gameQuestions[currentQuestion];
             selectedAnswer = index;
             answered = true;
@@ -553,19 +658,23 @@
             const feedback = document.getElementById('feedback');
             if (index === question.correct) {
                 score++;
+                questionStates[currentQuestion] = 'correct';
                 feedback.className = 'feedback success';
                 feedback.innerHTML = `<strong>✓ ¡Correcto!</strong><div class="feedback-explanation">${question.explanation}</div>`;
                 document.getElementById('scoreDisplay').textContent = score;
             } else {
+                questionStates[currentQuestion] = 'incorrect';
                 feedback.className = 'feedback error';
                 const correctAnswer = question.options[question.correct];
                 feedback.innerHTML = `<strong>✗ Incorrecto</strong><div style="margin-top: 10px;"><strong>Respuesta correcta:</strong> ${correctAnswer}</div><div class="feedback-explanation">${question.explanation}</div>`;
             }
 
+            updateProgressTracker();
             document.getElementById('nextBtn').disabled = false;
         }
 
         function nextQuestion() {
+            if (timerInterval) clearInterval(timerInterval);
             currentQuestion++;
             if (currentQuestion < gameQuestions.length) {
                 loadQuestion();
