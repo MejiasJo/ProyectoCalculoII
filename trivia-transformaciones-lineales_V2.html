@@ -316,6 +316,8 @@
             currentQuestion++;
             if (currentQuestion < gameQuestions.length) {
                 loadQuestion();
+                 window.scrollTo({ top: 0, behavior: 'smooth' }); // ← agregar esto
+
             } else {
                 showResults();
             }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -8,25 +9,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+
+    <!-- Cargar archivos externos -->
+    <script src="questions.js" defer></script>
+    <script src="utils.js" defer></script>
 </head>
+
 <body>
+
     <div class="container">
         <div class="header">
             <h1>🎓 Trivia Transformaciones Lineales</h1>
             <p>Pon a prueba tus conocimientos sobre Álgebra Lineal</p>
             <div class="header-info">
                 <div class="score-display">Puntuación: <span id="scoreDisplay">0</span>/%</div>
-                <div class="score-display" id="questionDisplay" style="display:none;">Pregunta: <span id="currentQuestion">0</span>/15</div>
+                <div class="score-display" id="questionDisplay" style="display:none;">Pregunta: <span
+                        id="currentQuestion">0</span>/15 🎲</div>
             </div>
         </div>
 
         <div class="content">
+
             <!-- Pantalla de Inicio -->
             <div class="start-screen active">
                 <div class="start-content">
                     <h2>¡Bienvenido!</h2>
                     <p>Prepárate para un emocionante trivia sobre <strong>Transformaciones Lineales</strong>.</p>
-                    <p style="color: #999; font-size: 0.95em;">Este juego incluye 15 preguntas interactivas con retroalimentación inmediata.</p>
+                    <p style="color: #999; font-size: 0.95em;">Cada partida selecciona <strong>15 preguntas
+                            aleatorias</strong> de un banco de más de 25 ejercicios. ¡Nunca habrá dos partidas iguales!
+                    </p>
                     <div class="button-group">
                         <button class="btn-primary" onclick="showRules()">Ver Reglas</button>
                         <button class="btn-secondary" onclick="startGame()">Comenzar Trivia</button>
@@ -39,13 +50,27 @@
                 <div class="rules-content">
                     <h2>📋 Reglas del Juego</h2>
                     <ul class="rules-list">
-                        <li><strong>15 Preguntas:</strong> Responde todas las preguntas sobre transformaciones lineales.</li>
-                        <li><strong>Puntuación:</strong> Obtén 1 punto por cada respuesta correcta. Máximo posible: 15 puntos.</li>
-                        <li><strong>Retroalimentación:</strong> Recibirás retroalimentación inmediata después de cada respuesta con explicaciones detalladas.</li>
-                        <li><strong>Una Oportunidad:</strong> Solo puedes seleccionar una respuesta por pregunta. Elige cuidadosamente.</li>
+                        <li><strong>15 Preguntas aleatorias:</strong> Cada partida toma 15 preguntas al azar de un banco
+                            de más de 25 ejercicios. ¡Cada intento es diferente!</li>
+                        <li><strong>Estilo procedimental:</strong> Las preguntas requieren calcular T(v), verificar
+                            linealidad, encontrar ker e Im, construir matrices asociadas y clasificar transformaciones
+                            (iso/mono/epi/automorfismo).</li>
+                        <li><strong>Puntuación:</strong> Obtén 1 punto por cada respuesta correcta. Máximo posible: 15
+                            puntos.</li>
+                        <li><strong>Retroalimentación:</strong> Recibirás retroalimentación inmediata con el
+                            procedimiento completo explicado paso a paso.</li>
+                        <li><strong>Una Oportunidad:</strong> Solo puedes seleccionar una respuesta por pregunta.
+                            ¡Calcula antes de elegir!</li>
                         <li><strong>Avance:</strong> Usa el botón "Siguiente" para pasar a la próxima pregunta.</li>
-                        <li><strong>Resultados:</strong> Al final, verás tu puntuación y podrás reiniciar el juego.</li>
-                        <li><strong>Objetivo:</strong> ¡Comprende los conceptos y disfruta aprendiendo!</li>
+                        <li><strong>Glosario rápido:</strong>
+                            <ul style="margin-top: 8px; padding-left: 20px; line-height: 2;">
+                                <li><strong>dim</strong> → dimensión</li>
+                                <li><strong>ker</strong> → núcleo: ker(T) = {v : T(v) = 0}</li>
+                                <li><strong>Im</strong> → imagen: Im(T) = {T(v) : v ∈ V}</li>
+                                <li><strong>Gen</strong> → generado por: combinaciones lineales de los vectores dados.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Objetivo:</strong> ¡Practica los procedimientos y comprende cómo verificar cada propiedad!</li>
                     </ul>
                     <div class="button-group">
                         <button class="btn-secondary" onclick="showStart()">Atrás</button>
@@ -56,19 +81,45 @@
 
             <!-- Pantalla del Juego -->
             <div class="game-screen">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="question-number" id="questionNumberDisplay"></div>
-                <div class="question" id="questionText"></div>
-                <div class="options" id="optionsContainer"></div>
-                <div class="feedback" id="feedback"></div>
-                <div class="button-container">
-                    <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente Pregunta</button>
+                <div class="game-container">
+                    <div class="progress-tracker" id="progressTracker"></div>
+
+                    <div class="game-content">
+
+                        <!-- ── OVERLAY RESPUESTA CORRECTA (dentro del cuadro) ── -->
+                        <div class="game-overlay" id="overlayCorrect">
+                            <img src="images/respuesta_correcta.png" alt="¡Respuesta Correcta!">
+                        </div>
+
+                        <!-- ── OVERLAY RESPUESTA INCORRECTA (dentro del cuadro) ── -->
+                        <div class="game-overlay" id="overlayIncorrect">
+                            <img src="images/respuesta_inconrrecra.png" alt="¡Respuesta Incorrecta!">
+                        </div>
+
+                        <!-- ── OVERLAY NUEVA PREGUNTA / TEMPORIZADOR (dentro del cuadro) ── -->
+                        <div class="game-overlay" id="overlayTimer">
+                            <img src="images/inicio_pregunta.png" alt="¡Temporizador 90 segundos!">
+                        </div>
+
+                        <div class="timer-container">
+                            <div class="timer-bar">
+                                <div class="timer-fill" id="timerFill"></div>
+                            </div>
+                            <div class="timer-display">
+                                <span id="timerText">1:30</span>
+                            </div>
+                        </div>
+                        <div class="question-number" id="questionNumberDisplay"></div>
+                        <div class="question" id="questionText"></div>
+                        <div class="options" id="optionsContainer"></div>
+                        <div class="feedback" id="feedback"></div>
+                        <div class="button-container">
+                            <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente Pregunta</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Pantalla de Resultados -->
             <div class="results-screen">
                 <div class="results-content">
                     <h2>¡Trivia Completado!</h2>
@@ -85,184 +136,41 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
     <script>
-        const questions = [
-            {
-                question: "¿Cuál es la definición correcta de una transformación lineal T: V → W?",
-                options: [
-                    "Es una función que multiplica todos los vectores por 2",
-                    "Es una función que satisface T(u + v) = T(u) + T(v) y T(cu) = cT(u) para todo u, v ∈ V y escalar c",
-                    "Es cualquier función entre dos espacios vectoriales",
-                    "Es una función que solo actúa sobre vectores unitarios"
-                ],
-                correct: 1,
-                explanation: "Una transformación lineal debe preservar las operaciones de suma de vectores y multiplicación escalar. Esta es la definición fundamental que caracteriza a todas las transformaciones lineales."
-            },
-            {
-                question: "Si T: ℝ² → ℝ² está definida por T(x, y) = (2x, 0), ¿cuál es el núcleo (kernel) de T?",
-                options: [
-                    "Gen {(1, 1)}",
-                    "Gen {(0, 1)}",
-                    "ℝ²",
-                    "{(0, 0)}"
-                ],
-                correct: 1,
-                explanation: "El núcleo es el conjunto de vectores que se mapean al vector cero. Resolvemos T(x, y) = (0, 0): (2x, 0) = (0, 0) ⟹ x = 0. Por lo tanto, el núcleo es {(0, y) : y ∈ ℝ} = Gen {(0, 1)}."
-            },
-            {
-                question: "Para una transformación lineal T: V → W, ¿qué es la imagen (Im(T))?",
-                options: [
-                    "El conjunto de todos los vectores en V",
-                    "El conjunto de todos los vectores en W que son imagen de al menos un vector en V",
-                    "El conjunto de vectores ortogonales a W",
-                    "El espacio nulo de T"
-                ],
-                correct: 1,
-                explanation: "La imagen de T es el conjunto Im(T) = {T(v) : v ∈ V}. Representa todos los posibles resultados que puede producir la transformación."
-            },
-            {
-                question: "¿Cuál es la matriz asociada a la transformación T(x, y) = (x + y, x - y)?",
-                options: [
-                    "[[1, 1], [1, -1]]",
-                    "[[1, 0], [0, 1]]",
-                    "[[1, 1], [0, 1]]",
-                    "[[2, 0], [0, 0]]"
-                ],
-                correct: 0,
-                explanation: "Los vectores columna de la matriz son T(1, 0) = (1, 1) y T(0, 1) = (1, -1). Por lo tanto, A = [[1, 1], [1, -1]]. Esto permite representar la transformación como una multiplicación de matriz-vector."
-            },
-            {
-                question: "¿Cuando una transformación lineal T es inyectiva (uno a uno)?",
-                options: [
-                    "Siempre que Im(T) = W",
-                    "Cuando ker(T) = {0}",
-                    "Cuando la matriz asociada es cuadrada",
-                    "Cuando T(0) = 0"
-                ],
-                correct: 1,
-                explanation: "Una transformación es inyectiva si y solo si su núcleo contiene solo el vector cero. Esto es porque si T(u) = T(v), entonces T(u - v) = 0, lo que implica u - v ∈ ker(T)."
-            },
-            {
-                question: "¿Cuál es el rango de la transformación T(x, y, z) = (x + y, y + z)?",
-                options: [
-                    "0",
-                    "1",
-                    "2",
-                    "3"
-                ],
-                correct: 2,
-                explanation: "El rango es la dimensión de la imagen. Los vectores (1, 0) y (0, 1) están en la imagen y son linealmente independientes. Por lo tanto, rango(T) = 2 = dim(Im(T))."
-            },
-            {
-                question: "Para una transformación lineal T: V → V con matriz A, ¿cuál es la relación entre ker(T), im(T) y dim(V)?",
-                options: [
-                    "ker(T) + im(T) = dim(V)",
-                    "dim(ker(T)) + dim(im(T)) = dim(V)",
-                    "dim(ker(T)) × dim(im(T)) = dim(V)",
-                    "ker(T) ∩ im(T) = ∅"
-                ],
-                correct: 1,
-                explanation: "Este es el Teorema de la Nulidad. La nulidad (dimensión del núcleo) más el rango (dimensión de la imagen) iguala la dimensión del dominio. Es un resultado fundamental del álgebra lineal."
-            },
-            {
-                question: "¿Cuál de las siguientes NO es una transformación lineal?",
-                options: [
-                    "T(x, y) = (2x, 3y)",
-                    "T(x, y) = (x + y, 0)",
-                    "T(x, y) = (x + 1, y)",
-                    "T(x, y) = (y, x)"
-                ],
-                correct: 2,
-                explanation: "T(x, y) = (x + 1, y) no es lineal porque no preserva la propiedad T(0) = 0. T(0, 0) = (1, 0) ≠ (0, 0). Las transformaciones lineales siempre mapean el vector cero al vector cero."
-            },
-            {
-                question: "¿Cuál es la composición de T ∘ S si T(x, y) = (x + y, 0) y S(x) = (x, 2x)?",
-                options: [
-                    "(T ∘ S)(x) = (3x, 0)",
-                    "(T ∘ S)(x) = (x, 2x)",
-                    "(T ∘ S)(x) = (2x, 0)",
-                    "(T ∘ S)(x) = (3x, 2x)"
-                ],
-                correct: 0,
-                explanation: "La composición T ∘ S significa aplicar S primero, luego T. (T ∘ S)(x) = T(S(x)) = T(x, 2x) = (x + 2x, 0) = (3x, 0). La composición de transformaciones lineales es también lineal."
-            },
-            {
-                question: "¿Una transformación lineal T: ℝ³ → ℝ² sobreyectiva debe tener rango igual a?",
-                options: [
-                    "1",
-                    "2",
-                    "3",
-                    "4"
-                ],
-                correct: 1,
-                explanation: "Una transformación es sobreyectiva cuando Im(T) = W. Como W = ℝ², el rango debe ser dim(W) = 2. Una transformación sobreyectiva tiene rango máximo."
-            },
-            {
-                question: "¿Cuál es la dimensión del núcleo de la matriz A = [[1, 0], [0, 0]]?",
-                options: [
-                    "0",
-                    "1",
-                    "2",
-                    "No se puede determinar"
-                ],
-                correct: 1,
-                explanation: "El núcleo está formado por vectores (x, y) tales que (1, 0; 0, 0)(x, y) = (0, 0). Esto da x = 0, y ∈ ℝ. El núcleo es Gen{(0, 1)}, que tiene dimensión 1."
-            },
-            {
-                question: "¿Un isomorfismo entre espacios vectoriales es una transformación lineal que es?",
-                options: [
-                    "Solo inyectiva",
-                    "Solo sobreyectiva",
-                    "Biyectiva (inyectiva y sobreyectiva)",
-                    "Ninguna de las anteriores"
-                ],
-                correct: 2,
-                explanation: "Un isomorfismo es una transformación lineal biyectiva que preserva toda la estructura del espacio vectorial. Permite identificar dos espacios vectoriales como 'esencialmente iguales'."
-            },
-            {
-                question: "¿Si T es una transformación lineal invertible, cuál es T⁻¹(T(v))?",
-                options: [
-                    "T(v)",
-                    "v",
-                    "0",
-                    "Depende de v"
-                ],
-                correct: 1,
-                explanation: "Por definición, si T⁻¹ es la inversa de T, entonces T⁻¹(T(v)) = (T⁻¹ ∘ T)(v) = I(v) = v, donde I es la transformación identidad."
-            },
-            {
-                question: "¿Cuál es la imágen de T(x, y, z) = (x + y + z, x + y + z)?",
-                options: [
-                    "Gen{(1, 1)}",
-                    "Gen{(1, 1), (1, 1)}",
-                    "ℝ²",
-                    "{(0, 0)}"
-                ],
-                correct: 0,
-                explanation: "Todos los elementos de la imagen tienen la forma (x + y + z, x + y + z) = (x + y + z)(1, 1). Por lo tanto, Im(T) = Gen{(1, 1)}, que es una línea en ℝ²."
-            },
-            {
-                question: "¿En qué consiste la representación matricial de una transformación lineal?",
-                options: [
-                    "En representar T como un número",
-                    "En expresar T(v) = Av donde A es una matriz cuyas columnas son T aplicada a los vectores base",
-                    "En una tabla con los autovalores de T",
-                    "En una lista de todos los vectores transformados"
-                ],
-                correct: 1,
-                explanation: "La representación matricial es fundamental: si e₁, e₂, ..., eₙ son los vectores base de V, la matriz A tiene columnas T(e₁), T(e₂), ..., T(eₙ). Esto permite calcular T(v) por multiplicación matricial."
-            }
-        ];
+        const QUESTIONS_PER_GAME = 15;
+        const TIME_PER_QUESTION  = 90;
+        const OVERLAY_DURATION   = 2000; 
 
-        let currentQuestion = 0;
-        let score = 0;
-        let selectedAnswer = null;
-        let answered = false;
-        let gameStartTime = Date.now();
+        let currentQuestion   = 0;
+        let score             = 0;
+        let selectedAnswer    = null;
+        let answered          = false;
+        let gameStartTime     = Date.now();
+        let gameQuestions     = [];
+        let questionStates    = [];
+        let questionStartTime = 0;
+        let timerInterval     = null;
 
+      
+        function showOverlay(id, callback) {
+            const el = document.getElementById(id);
+            el.classList.remove('game-overlay-hide');
+            el.classList.add('show');
+
+            setTimeout(() => {
+                el.classList.add('game-overlay-hide');
+                setTimeout(() => {
+                    el.classList.remove('show', 'game-overlay-hide');
+                    if (callback) callback();
+                }, 400); 
+            }, OVERLAY_DURATION);
+        }
+
+      
         function showStart() {
             document.querySelector('.start-screen').classList.add('active');
             document.querySelector('.rules-screen').classList.remove('active');
@@ -273,124 +181,227 @@
         function showRules() {
             document.querySelector('.start-screen').classList.remove('active');
             document.querySelector('.rules-screen').classList.add('active');
-            document.querySelector('.game-screen').classList.remove('active');
-            document.querySelector('.results-screen').classList.remove('active');
         }
 
+     
         function startGame() {
             currentQuestion = 0;
-            score = 0;
-            selectedAnswer = null;
-            answered = false;
-            gameStartTime = Date.now();
+            score           = 0;
+            selectedAnswer  = null;
+            answered        = false;
+            gameStartTime   = Date.now();
+            gameQuestions   = shuffleArray(allQuestions).slice(0, QUESTIONS_PER_GAME);
+            questionStates  = new Array(gameQuestions.length).fill('unanswered');
+
             document.querySelector('.start-screen').classList.remove('active');
             document.querySelector('.rules-screen').classList.remove('active');
             document.querySelector('.game-screen').classList.add('active');
             document.querySelector('.results-screen').classList.remove('active');
             document.getElementById('questionDisplay').style.display = 'block';
-            loadQuestion();
+
+            buildProgressTracker();
+
+            showOverlay('overlayTimer', () => {
+                loadQuestion();
+            });
         }
 
+        
+        function buildProgressTracker() {
+            const tracker = document.getElementById('progressTracker');
+            tracker.innerHTML = '';
+            for (let i = 0; i < gameQuestions.length; i++) {
+                const item = document.createElement('div');
+                item.className = 'progress-item' + (i === 0 ? ' active' : '');
+                item.textContent = i + 1;
+                item.id = `progress-${i}`;
+                tracker.appendChild(item);
+            }
+        }
+
+        function updateProgressTracker() {
+            for (let i = 0; i < gameQuestions.length; i++) {
+                const item = document.getElementById(`progress-${i}`);
+                item.classList.remove('active', 'correct', 'incorrect');
+                if (questionStates[i] === 'correct') {
+                    item.classList.add('correct');
+                    item.textContent = '✔';
+                } else if (questionStates[i] === 'incorrect') {
+                    item.classList.add('incorrect');
+                    item.textContent = '✗';
+                } else if (i === currentQuestion) {
+                    item.classList.add('active');
+                    item.textContent = i + 1;
+                } else {
+                    item.textContent = i + 1;
+                }
+            }
+        }
+
+       
+        function formatTime(s) {
+            return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            questionStartTime = Date.now();
+
+            timerInterval = setInterval(() => {
+                const elapsed   = Math.floor((Date.now() - questionStartTime) / 1000);
+                const remaining = Math.max(0, TIME_PER_QUESTION - elapsed);
+                const pct       = (remaining / TIME_PER_QUESTION) * 100;
+
+                document.getElementById('timerText').textContent = formatTime(remaining);
+                document.getElementById('timerFill').style.width = pct + '%';
+
+                const display = document.querySelector('.timer-display');
+                const fill    = document.getElementById('timerFill');
+                display.classList.remove('warning', 'danger');
+                fill.classList.remove('warning', 'danger');
+
+                if (remaining <= 10) {
+                    display.classList.add('danger');
+                    fill.classList.add('danger');
+                } else if (remaining <= 30) {
+                    display.classList.add('warning');
+                    fill.classList.add('warning');
+                }
+
+                if (remaining === 0) {
+                    clearInterval(timerInterval);
+                    if (!answered) {
+                        answered = true;
+                        questionStates[currentQuestion] = 'incorrect';
+                        updateProgressTracker();
+
+                        const feedback = document.getElementById('feedback');
+                        feedback.className = 'feedback error';
+                        feedback.innerHTML = '<strong>⚠️ ¡Se agotó el tiempo!</strong><div class="feedback-explanation">Debes ser más rápido. Intenta de nuevo.</div>';
+
+                        document.querySelectorAll('.option').forEach((opt, i) => {
+                            opt.classList.add('disabled');
+                            if (i === gameQuestions[currentQuestion].correct) opt.classList.add('correct');
+                        });
+
+                        document.getElementById('nextBtn').disabled = false;
+                        showOverlay('overlayIncorrect', null);
+                    }
+                }
+            }, 100);
+        }
+
+        
         function loadQuestion() {
-            const question = questions[currentQuestion];
-            const progressPercent = ((currentQuestion + 1) / questions.length) * 100;
-            document.getElementById('progressFill').style.width = progressPercent + '%';
-            document.getElementById('questionNumberDisplay').textContent = `Pregunta ${currentQuestion + 1} de ${questions.length}`;
+            const q = gameQuestions[currentQuestion];
+            document.getElementById('questionNumberDisplay').textContent =
+                `Pregunta ${currentQuestion + 1} de ${gameQuestions.length}`;
             document.getElementById('currentQuestion').textContent = currentQuestion + 1;
-            document.getElementById('questionText').textContent = question.question;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-            
-            question.options.forEach((option, index) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-                optionDiv.textContent = option;
-                optionDiv.onclick = () => selectAnswer(index);
-                optionDiv.id = `option-${index}`;
-                optionsContainer.appendChild(optionDiv);
+            document.getElementById('questionText').textContent    = q.question;
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className   = 'option';
+                div.textContent = opt;
+                div.id          = `option-${idx}`;
+                div.onclick     = () => selectAnswer(idx);
+                container.appendChild(div);
             });
 
-            document.getElementById('feedback').innerHTML = '';
-            document.getElementById('feedback').className = 'feedback';
-            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('feedback').innerHTML  = '';
+            document.getElementById('feedback').className  = 'feedback';
+            document.getElementById('nextBtn').disabled    = true;
             selectedAnswer = null;
-            answered = false;
+            answered       = false;
+
+            updateProgressTracker();
+            startTimer();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        
         function selectAnswer(index) {
             if (answered) return;
+            if (timerInterval) clearInterval(timerInterval);
 
-            const question = questions[currentQuestion];
+            const q     = gameQuestions[currentQuestion];
             selectedAnswer = index;
-            answered = true;
+            answered       = true;
+            const correct  = index === q.correct;
 
-            const options = document.querySelectorAll('.option');
-            options.forEach((option, i) => {
-                option.classList.add('disabled');
-                if (i === question.correct) {
-                    option.classList.add('correct');
-                }
-                if (i === index && i !== question.correct) {
-                    option.classList.add('incorrect');
-                }
+            document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.add('disabled');
+                if (i === q.correct)         opt.classList.add('correct');
+                if (i === index && !correct) opt.classList.add('incorrect');
             });
 
             const feedback = document.getElementById('feedback');
-            if (index === question.correct) {
+            if (correct) {
                 score++;
+                questionStates[currentQuestion] = 'correct';
                 feedback.className = 'feedback success';
-                feedback.innerHTML = `<strong>✓ ¡Correcto!</strong><div class="feedback-explanation">${question.explanation}</div>`;
+                feedback.innerHTML = `<strong>✓ ¡Correcto!</strong><div class="feedback-explanation">${q.explanation}</div>`;
                 document.getElementById('scoreDisplay').textContent = score;
             } else {
+                questionStates[currentQuestion] = 'incorrect';
                 feedback.className = 'feedback error';
-                const correctAnswer = question.options[question.correct];
-                feedback.innerHTML = `<strong>✗ Incorrecto</strong><div style="margin-top: 10px;"><strong>Respuesta correcta:</strong> ${correctAnswer}</div><div class="feedback-explanation">${question.explanation}</div>`;
+                feedback.innerHTML = `<strong>✗ Incorrecto</strong>
+                    <div style="margin-top:10px"><strong>Respuesta correcta:</strong> ${q.options[q.correct]}</div>
+                    <div class="feedback-explanation">${q.explanation}</div>`;
             }
 
+            updateProgressTracker();
             document.getElementById('nextBtn').disabled = false;
+
+            const overlayId = correct ? 'overlayCorrect' : 'overlayIncorrect';
+            showOverlay(overlayId, null);
         }
 
+        /* ─────────────────────────────────────────
+           SIGUIENTE PREGUNTA
+        ───────────────────────────────────────── */
         function nextQuestion() {
+            if (timerInterval) clearInterval(timerInterval);
             currentQuestion++;
-            if (currentQuestion < questions.length) {
-                loadQuestion();
+
+            if (currentQuestion < gameQuestions.length) {
+                showOverlay('overlayTimer', () => {
+                    loadQuestion();
+                });
             } else {
                 showResults();
             }
         }
 
+        /* ─────────────────────────────────────────
+           RESULTADOS
+        ───────────────────────────────────────── */
         function showResults() {
-            const percentage = Math.round((score / questions.length) * 100);
-            const elapsedTime = Math.round((Date.now() - gameStartTime) / 1000);
+            const pct     = Math.round((score / gameQuestions.length) * 100);
+            const elapsed = Math.round((Date.now() - gameStartTime) / 1000);
 
             document.querySelector('.game-screen').classList.remove('active');
             document.querySelector('.results-screen').classList.add('active');
 
-            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
-            document.getElementById('correctCount').textContent = score;
-            document.getElementById('percentageScore').textContent = percentage;
-            document.getElementById('timeSpent').textContent = elapsedTime;
-            document.getElementById('scoreDisplay').textContent = percentage + '%';
+            document.getElementById('finalScore').textContent      = `${score}/${gameQuestions.length}`;
+            document.getElementById('correctCount').textContent    = score;
+            document.getElementById('percentageScore').textContent = pct;
+            document.getElementById('timeSpent').textContent       = elapsed;
+            document.getElementById('scoreDisplay').textContent    = pct + '%';
 
-            let message = '';
-            if (percentage === 100) {
-                message = "🌟 ¡Excelente! Dominas perfectamente las transformaciones lineales. 🌟";
-            } else if (percentage >= 80) {
-                message = "🎉 ¡Muy bien! Tienes un excelente conocimiento de los temas. Intenta de nuevo para mejorar.";
-            } else if (percentage >= 60) {
-                message = "✓ Buen trabajo. Repasa algunos conceptos y vuelve a intentar para mejorar tu puntuación.";
-            } else if (percentage >= 40) {
-                message = "⚠️ Podrías mejorar. Estudia más sobre transformaciones lineales y núcleos/imágenes.";
-            } else {
-                message = "📚 Te recomendamos estudiar más sobre los conceptos básicos de transformaciones lineales.";
-            }
+            let msg = '';
+            if (pct === 100)    msg = "🌟 ¡Excelente! Dominas perfectamente las transformaciones lineales. 🌟";
+            else if (pct >= 80) msg = "🎉 ¡Muy bien! Tienes un excelente conocimiento. Intenta de nuevo para mejorar.";
+            else if (pct >= 60) msg = "✓ Buen trabajo. Repasa algunos procedimientos y vuelve a intentarlo.";
+            else if (pct >= 40) msg = "⚠️ Podrías mejorar. Practica los cálculos de ker, Im y clasificación.";
+            else                msg = "📚 Te recomendamos repasar los ejemplos del material de clase.";
 
-            document.getElementById('scoreMessage').textContent = message;
+            document.getElementById('scoreMessage').textContent = msg;
         }
 
-        // Mostrar la pantalla de inicio al cargar
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('scoreDisplay').textContent = '0';
         });
     </script>
