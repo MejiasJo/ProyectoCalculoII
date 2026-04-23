@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tetris</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
         <div class="game-wrapper">
@@ -38,6 +40,110 @@
                     <div class="question-options" id="questionOptions"></div>
                     <div class="question-feedback" id="questionFeedback"></div>
                     <div class="question-explanation" id="questionExplanation"></div>
+                </div>
+            </div>
+
+            <!-- Modal de Reglas -->
+            <div class="rules-modal" id="rulesModal">
+                <div class="rules-content">
+                    <div class="rules-header">
+                        <h2>📋 Reglas del Juego</h2>
+                        <button class="rules-close" id="rulesClose">✕</button>
+                    </div>
+
+                    <div class="rules-body">
+                        <div class="rules-section">
+                            <h3>🎯 Objetivo</h3>
+                            <p>Completa líneas horizontales colocando las piezas que caen. Cada línea completa
+                                desaparece y suma puntos. ¡El juego termina cuando las piezas llegan al tope!</p>
+                        </div>
+
+                        <div class="rules-section">
+                            <h3>🕹️ Controles</h3>
+                            <div class="rules-controls">
+                                <div class="rules-control-item">
+                                    <span class="rules-key">↑</span>
+                                    <span>Rotar pieza</span>
+                                </div>
+                                <div class="rules-control-item">
+                                    <span class="rules-key">← →</span>
+                                    <span>Mover izquierda / derecha</span>
+                                </div>
+                                <div class="rules-control-item">
+                                    <span class="rules-key">↓</span>
+                                    <span>Bajar más rápido</span>
+                                </div>
+                                <div class="rules-control-item">
+                                    <span class="rules-key">Space</span>
+                                    <span>Pausar / Reanudar</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rules-section">
+                            <h3>⭐ Puntuación</h3>
+                            <div class="rules-score-table">
+                                <div class="rules-score-row">
+                                    <span class="rules-score-label">1 línea</span>
+                                    <span class="rules-score-points">100 pts × nivel</span>
+                                </div>
+                                <div class="rules-score-row">
+                                    <span class="rules-score-label">2 líneas</span>
+                                    <span class="rules-score-points">300 pts × nivel</span>
+                                </div>
+                                <div class="rules-score-row">
+                                    <span class="rules-score-label">3 líneas</span>
+                                    <span class="rules-score-points">500 pts × nivel</span>
+                                </div>
+                                <div class="rules-score-row highlight">
+                                    <span class="rules-score-label">4 líneas (Tetris!)</span>
+                                    <span class="rules-score-points">800 pts × nivel</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rules-section">
+                            <h3>📈 Niveles</h3>
+                            <p>Cada <strong>10 líneas</strong> completadas subes de nivel. Con cada nivel, las piezas
+                                caen más rápido. ¡Llega lo más lejos que puedas!</p>
+                        </div>
+
+                        <div class="rules-section">
+                            <h3>❓ Preguntas de Trivia</h3>
+                            <p>Al completar líneas aparecerán preguntas sobre <strong>Transformaciones
+                                    Lineales</strong>. El juego se pausa mientras respondes. Una respuesta correcta te
+                                da puntos extra.</p>
+
+                            <div class="rules-nomenclature">
+                                <div class="rules-nomen-title">Temas que se evalúan:</div>
+
+                                <div class="rules-nomen-item">
+                                    <span class="rules-nomen-tag tag-blue">T: ℝⁿ → ℝᵐ</span>
+                                    <span>Verificación de linealidad (aditividad y homogeneidad)</span>
+                                </div>
+                                <div class="rules-nomen-item">
+                                    <span class="rules-nomen-tag tag-purple">ker(T)</span>
+                                    <span>Núcleo: vectores que T lleva al <strong>0</strong></span>
+                                </div>
+                                <div class="rules-nomen-item">
+                                    <span class="rules-nomen-tag tag-blue">Im(T)</span>
+                                    <span>Imagen: conjunto de todos los valores que produce T</span>
+                                </div>
+                                <div class="rules-nomen-item">
+                                    <span class="rules-nomen-tag tag-green">dim(ker) + dim(Im) = n</span>
+                                    <span>Teorema de la Dimensión</span>
+                                </div>
+                                <div class="rules-nomen-item">
+                                    <span class="rules-nomen-tag tag-green">Gen{v₁, v₂, …}</span>
+                                    <span>Subespacio generado: todas las combinaciones lineales de los vectores
+                                        dados</span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="rules-close-btn" id="rulesCloseBtn">¡Entendido, a jugar!</button>
                 </div>
             </div>
 
@@ -76,6 +182,7 @@
 
                     <button id="startBtn" class="btn-primary">Start Game</button>
                     <button id="pauseBtn" class="btn-secondary" disabled>Pause</button>
+                    <button id="rulesBtn" class="btn-rules">📋 Ver Reglas</button>
 
                     <div class="touch-controls">
                         <button class="touch-btn touch-btn-rotate" id="rotateBtnTouch">ROTATE</button>
@@ -92,5 +199,31 @@
 
     <script src="../questions.js"></script>
     <script src="script.js"></script>
+
+    <script>
+        const rulesBtn = document.getElementById('rulesBtn');
+        const rulesModal = document.getElementById('rulesModal');
+        const rulesClose = document.getElementById('rulesClose');
+        const rulesCloseBtn = document.getElementById('rulesCloseBtn');
+
+        rulesBtn.addEventListener('click', () => {
+            rulesModal.classList.add('active');
+        });
+
+        rulesClose.addEventListener('click', () => {
+            rulesModal.classList.remove('active');
+        });
+
+        rulesCloseBtn.addEventListener('click', () => {
+            rulesModal.classList.remove('active');
+        });
+
+        rulesModal.addEventListener('click', (e) => {
+            if (e.target === rulesModal) {
+                rulesModal.classList.remove('active');
+            }
+        });
+    </script>
 </body>
+
 </html>
