@@ -100,7 +100,6 @@ document.addEventListener('keydown', handleKeyDown);
 // Touch button listeners
 rotateBtnTouch.addEventListener('click', () => handleTouchRotate());
 leftBtnTouch.addEventListener('click', () => handleTouchMove(-1));
-downBtnTouch.addEventListener('click', () => handleTouchMove(1));
 rightBtnTouch.addEventListener('click', () => handleTouchMove(1));
 
 // Swipe gestures
@@ -182,7 +181,7 @@ function handleTouchMove(direction) {
     draw();
 }
 
-// Reemplazar el event listener de abajo para el botón down
+// Event listener para el botón down
 downBtnTouch.addEventListener('click', () => {
     if (!gameRunning || gamePaused) return;
     if (canMovePiece(currentPiece, currentX, currentY + 1)) {
@@ -371,6 +370,43 @@ function drawNext() {
                     nextCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
                     nextCtx.lineWidth = 1;
                     nextCtx.strokeRect(x + 2, y + 2, 26, 26);
+                }
+            }
+        }
+    }
+
+    // Dibuja también en el canvas móvil
+    drawNextMobile();
+}
+
+function drawNextMobile() {
+    const nextCanvasMobile = document.getElementById('nextCanvasMobile');
+    const mobileCtx = nextCanvasMobile.getContext('2d');
+    
+    const BLOCK_SIZE_MOBILE = 15; // Escala adaptada para 60x60
+    
+    mobileCtx.fillStyle = '#0f0f1e';
+    mobileCtx.fillRect(0, 0, nextCanvasMobile.width, nextCanvasMobile.height);
+
+    mobileCtx.strokeStyle = 'rgba(100, 150, 255, 0.1)';
+    mobileCtx.lineWidth = 0.5;
+
+    if (nextPiece) {
+        const shape = nextPiece.shape;
+        const startX = (nextCanvasMobile.width / BLOCK_SIZE_MOBILE - shape[0].length) / 2;
+        const startY = (nextCanvasMobile.height / BLOCK_SIZE_MOBILE - shape.length) / 2;
+
+        for (let row = 0; row < shape.length; row++) {
+            for (let col = 0; col < shape[row].length; col++) {
+                if (shape[row][col]) {
+                    const x = (startX + col) * BLOCK_SIZE_MOBILE;
+                    const y = (startY + row) * BLOCK_SIZE_MOBILE;
+
+                    mobileCtx.fillStyle = nextPiece.color;
+                    mobileCtx.fillRect(x + 1, y + 1, BLOCK_SIZE_MOBILE - 2, BLOCK_SIZE_MOBILE - 2);
+                    mobileCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    mobileCtx.lineWidth = 0.5;
+                    mobileCtx.strokeRect(x + 1, y + 1, BLOCK_SIZE_MOBILE - 2, BLOCK_SIZE_MOBILE - 2);
                 }
             }
         }

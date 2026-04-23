@@ -13,18 +13,30 @@
             <!-- Header -->
             <div class="header">
                 <h1>TETRIS</h1>
-                <div class="score-board">
-                    <div class="score-item">
-                        <span class="label">Score</span>
-                        <span class="value" id="score">0</span>
+                <div class="top-bar">
+                    <div class="score-board">
+                        <div class="score-item">
+                            <span class="label">Score</span>
+                            <span class="value" id="score">0</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="label">Lines</span>
+                            <span class="value" id="lines">0</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="label">Level</span>
+                            <span class="value" id="level">1</span>
+                        </div>
+                        <!-- Next piece visible en móvil dentro del header -->
+                        <div class="score-item next-mobile">
+                            <span class="label">Next</span>
+                            <canvas id="nextCanvasMobile" width="60" height="60"></canvas>
+                        </div>
                     </div>
-                    <div class="score-item">
-                        <span class="label">Lines</span>
-                        <span class="value" id="lines">0</span>
-                    </div>
-                    <div class="score-item">
-                        <span class="label">Level</span>
-                        <span class="value" id="level">1</span>
+                    <div class="header-buttons">
+                        <button id="startBtn" class="btn-primary">▶ Start</button>
+                        <button id="pauseBtn" class="btn-secondary" disabled>⏸ Pause</button>
+                        <button id="rulesBtn" class="btn-rules">📋 Reglas</button>
                     </div>
                 </div>
             </div>
@@ -47,16 +59,16 @@
             <div class="rules-modal" id="rulesModal">
                 <div class="rules-content">
                     <div class="rules-header">
-                        <h2>📋 Reglas del Juego</h2>
+                        <h2>Reglas del Juego</h2>
                         <button class="rules-close" id="rulesClose">✕</button>
                     </div>
                     <div class="rules-body">
                         <div class="rules-section">
-                            <h3>🎯 Objetivo</h3>
+                            <h3>Objetivo</h3>
                             <p>Completa líneas horizontales colocando las piezas que caen. Cada línea completa desaparece y suma puntos. ¡El juego termina cuando las piezas llegan al tope!</p>
                         </div>
                         <div class="rules-section">
-                            <h3>🕹️ Controles</h3>
+                            <h3> Controles</h3>
                             <div class="rules-controls">
                                 <div class="rules-control-item">
                                     <span class="rules-key">↑</span>
@@ -77,7 +89,7 @@
                             </div>
                         </div>
                         <div class="rules-section">
-                            <h3>⭐ Puntuación</h3>
+                            <h3> Puntuación</h3>
                             <div class="rules-score-table">
                                 <div class="rules-score-row">
                                     <span class="rules-score-label">1 línea</span>
@@ -98,11 +110,11 @@
                             </div>
                         </div>
                         <div class="rules-section">
-                            <h3>📈 Niveles</h3>
+                            <h3> Niveles</h3>
                             <p>Cada <strong>10 líneas</strong> completadas subes de nivel. Con cada nivel, las piezas caen más rápido. ¡Llega lo más lejos que puedas!</p>
                         </div>
                         <div class="rules-section">
-                            <h3>❓ Preguntas de Trivia</h3>
+                            <h3> Preguntas de Trivia</h3>
                             <p>Al completar líneas aparecerán preguntas sobre <strong>Transformaciones Lineales</strong>. El juego se pausa mientras respondes. Una respuesta correcta te da puntos extra.</p>
                             <div class="rules-nomenclature">
                                 <div class="rules-nomen-title">Temas que se evalúan:</div>
@@ -178,23 +190,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="side-buttons">
-                        <button id="startBtn" class="btn-primary">▶ Start</button>
-                        <button id="pauseBtn" class="btn-secondary" disabled>⏸ Pause</button>
-                        <button id="rulesBtn" class="btn-rules">📋 Reglas</button>
-                    </div>
                 </div>
             </div>
 
-            <!-- Barra de botones móvil (debajo del canvas) -->
-            <div class="mobile-action-bar">
-                <button id="startBtnMobile" class="btn-primary">▶ Start</button>
-                <button id="pauseBtnMobile" class="btn-secondary" disabled>⏸ Pause</button>
-                <button id="rulesBtnMobile" class="btn-rules">📋 Reglas</button>
-            </div>
-
             <!-- Controles táctiles -->
-            <div class="touch-controls">
+            <div class="touch-controls" id="touchControls">
                 <div class="touch-row">
                     <button class="touch-btn touch-btn-rotate" id="rotateBtnTouch">
                         <span class="touch-icon">↻</span>
@@ -222,42 +222,57 @@
     <script src="script.js"></script>
 
     <script>
-        // Modal de reglas
-        const allRulesBtns = [
-            document.getElementById('rulesBtn'),
-            document.getElementById('rulesBtnMobile')
-        ].filter(Boolean);
-        const rulesModal = document.getElementById('rulesModal');
-        const rulesClose = document.getElementById('rulesClose');
+        // ── Modal de reglas ──
+        const rulesModal    = document.getElementById('rulesModal');
+        const rulesClose    = document.getElementById('rulesClose');
         const rulesCloseBtn = document.getElementById('rulesCloseBtn');
 
-        allRulesBtns.forEach(btn => {
-            btn.addEventListener('click', () => rulesModal.classList.add('active'));
-        });
-        rulesClose.addEventListener('click', () => rulesModal.classList.remove('active'));
+        document.getElementById('rulesBtn').addEventListener('click', () => rulesModal.classList.add('active'));
+        rulesClose.addEventListener('click',    () => rulesModal.classList.remove('active'));
         rulesCloseBtn.addEventListener('click', () => rulesModal.classList.remove('active'));
-        rulesModal.addEventListener('click', (e) => {
+        rulesModal.addEventListener('click', e => {
             if (e.target === rulesModal) rulesModal.classList.remove('active');
         });
 
-        // Sincronizar botones Start/Pause móvil con los del side-panel
-        const startBtnDesktop = document.getElementById('startBtn');
-        const pauseBtnDesktop = document.getElementById('pauseBtn');
-        const startBtnMobile  = document.getElementById('startBtnMobile');
-        const pauseBtnMobile  = document.getElementById('pauseBtnMobile');
+        // El canvas móvil se dibuja automáticamente desde drawNext() en script.js
 
-        startBtnMobile.addEventListener('click', () => startBtnDesktop.click());
-        pauseBtnMobile.addEventListener('click', () => pauseBtnDesktop.click());
+        // ── Fix botón DOWN táctil: usar touchstart/touchend en vez de click ──
+        // Evita que el scroll/swipe interfiera con el botón de bajar
+        const downBtn = document.getElementById('downBtnTouch');
 
-        // Observar cambios de disabled en los botones desktop para reflejarlos en móvil
-        const syncDisabled = (source, target) => {
-            const observer = new MutationObserver(() => {
-                target.disabled = source.disabled;
-            });
-            observer.observe(source, { attributes: true, attributeFilter: ['disabled'] });
+        downBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Disparar evento de teclado ArrowDown
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+        }, { passive: false });
+
+        downBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowDown', bubbles: true }));
+        }, { passive: false });
+
+        // También arreglamos los demás botones táctiles con el mismo patrón
+        const touchMap = {
+            'rotateBtnTouch': 'ArrowUp',
+            'leftBtnTouch':   'ArrowLeft',
+            'rightBtnTouch':  'ArrowRight'
         };
-        syncDisabled(startBtnDesktop, startBtnMobile);
-        syncDisabled(pauseBtnDesktop, pauseBtnMobile);
+
+        Object.entries(touchMap).forEach(([id, key]) => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+            }, { passive: false });
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                document.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
+            }, { passive: false });
+        });
     </script>
 </body>
 </html>
