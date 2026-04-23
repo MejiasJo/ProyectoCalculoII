@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Tetris</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="game-wrapper">
+            <div class="header">
+                <h1>TETRIS</h1>
+                <div class="score-board">
+                    <div class="score-item">
+                        <span class="label">Score</span>
+                        <span class="value" id="score">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="label">Lines</span>
+                        <span class="value" id="lines">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="label">Level</span>
+                        <span class="value" id="level">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Preguntas -->
+            <div class="question-modal" id="questionModal">
+                <div class="question-content">
+                    <div class="question-header">
+                        <h2>Pregunta</h2>
+                        <span class="question-counter" id="questionCounter">1/40</span>
+                    </div>
+                    <div class="question-text" id="questionText"></div>
+                    <div class="question-options" id="questionOptions"></div>
+                    <div class="question-feedback" id="questionFeedback"></div>
+                    <div class="question-explanation" id="questionExplanation"></div>
+                </div>
+            </div>
+
+            <div class="game-container">
+                <div class="game-board">
+                    <canvas id="gameCanvas" width="300" height="600"></canvas>
+                </div>
+
+                <div class="side-panel">
+                    <div class="next-piece">
+                        <h3>Next</h3>
+                        <canvas id="nextCanvas" width="120" height="120"></canvas>
+                    </div>
+
+                    <div class="controls">
+                        <h3>Controls</h3>
+                        <div class="control-list">
+                            <div class="control-item">
+                                <span class="key">↑</span>
+                                <span class="action">Rotate</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">← →</span>
+                                <span class="action">Move</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">↓</span>
+                                <span class="action">Drop</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">Space</span>
+                                <span class="action">Pause</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="startBtn" class="btn-primary">Start Game</button>
+                    <button id="pauseBtn" class="btn-secondary" disabled>Pause</button>
+
+                    <div class="touch-controls">
+                        <button class="touch-btn touch-btn-rotate" id="rotateBtnTouch">ROTATE</button>
+                        <button class="touch-btn touch-btn-left" id="leftBtnTouch">LEFT</button>
+                        <button class="touch-btn touch-btn-down" id="downBtnTouch">DOWN</button>
+                        <button class="touch-btn touch-btn-right" id="rightBtnTouch">RIGHT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status" id="status">Press Start to begin</div>
+        </div>
+    </div>
+
+    <script src="../questions.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
